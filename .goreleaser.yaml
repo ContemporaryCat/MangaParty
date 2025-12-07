@@ -1,0 +1,7 @@
+version: 2
+project_name: mangaparty
+builds:
+  - env: [ "CGO_ENABLED=0" ]
+    goos: [ linux ]
+    goarch: [ amd64 ]
+    binary: mangaparty
