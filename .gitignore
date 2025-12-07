@@ -1,0 +1,8 @@
+# .gitignore
+
+release.ps1
+
+mangaparty.exe
+mangaparty
+
+.vscode/
