@@ -33,6 +33,82 @@ func (q *Queries) CreateAgent(ctx context.Context, arg CreateAgentParams) error 
 	return err
 }
 
+const createExpression = `-- name: CreateExpression :exec
+INSERT INTO mp_expression (id, category, extent, intended_audience, use_rights, cartographic_scale, language, musical_key, medium_of_performance)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+`
+
+type CreateExpressionParams struct {
+	ID                  pgtype.UUID `json:"id"`
+	Category            []string    `json:"category"`
+	Extent              []string    `json:"extent"`
+	IntendedAudience    []string    `json:"intended_audience"`
+	UseRights           []string    `json:"use_rights"`
+	CartographicScale   []string    `json:"cartographic_scale"`
+	Language            []string    `json:"language"`
+	MusicalKey          []string    `json:"musical_key"`
+	MediumOfPerformance []string    `json:"medium_of_performance"`
+}
+
+func (q *Queries) CreateExpression(ctx context.Context, arg CreateExpressionParams) error {
+	_, err := q.db.Exec(ctx, createExpression,
+		arg.ID,
+		arg.Category,
+		arg.Extent,
+		arg.IntendedAudience,
+		arg.UseRights,
+		arg.CartographicScale,
+		arg.Language,
+		arg.MusicalKey,
+		arg.MediumOfPerformance,
+	)
+	return err
+}
+
+const createItem = `-- name: CreateItem :exec
+INSERT INTO mp_item (id, location, use_rights)
+VALUES ($1, $2, $3)
+`
+
+type CreateItemParams struct {
+	ID        pgtype.UUID `json:"id"`
+	Location  []string    `json:"location"`
+	UseRights []string    `json:"use_rights"`
+}
+
+func (q *Queries) CreateItem(ctx context.Context, arg CreateItemParams) error {
+	_, err := q.db.Exec(ctx, createItem, arg.ID, arg.Location, arg.UseRights)
+	return err
+}
+
+const createManifestation = `-- name: CreateManifestation :exec
+INSERT INTO mp_manifestation (id, carrier_category, extent, intended_audience, manifestation_statement, access_conditions, use_rights)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+`
+
+type CreateManifestationParams struct {
+	ID                     pgtype.UUID `json:"id"`
+	CarrierCategory        []string    `json:"carrier_category"`
+	Extent                 []string    `json:"extent"`
+	IntendedAudience       []string    `json:"intended_audience"`
+	ManifestationStatement []string    `json:"manifestation_statement"`
+	AccessConditions       []string    `json:"access_conditions"`
+	UseRights              []string    `json:"use_rights"`
+}
+
+func (q *Queries) CreateManifestation(ctx context.Context, arg CreateManifestationParams) error {
+	_, err := q.db.Exec(ctx, createManifestation,
+		arg.ID,
+		arg.CarrierCategory,
+		arg.Extent,
+		arg.IntendedAudience,
+		arg.ManifestationStatement,
+		arg.AccessConditions,
+		arg.UseRights,
+	)
+	return err
+}
+
 const createPerson = `-- name: CreatePerson :exec
 INSERT INTO mp_person (id, profession)
 VALUES ($1, $2)
@@ -110,6 +186,116 @@ type CreateWorkParams struct {
 func (q *Queries) CreateWork(ctx context.Context, arg CreateWorkParams) error {
 	_, err := q.db.Exec(ctx, createWork, arg.ID, arg.Category, arg.RepresentativeAttributes)
 	return err
+}
+
+const getExpression = `-- name: GetExpression :one
+SELECT r.id, r.entity_type, r.note, r.created_at, e.category, e.extent, e.intended_audience, e.use_rights, e.cartographic_scale, e.language, e.musical_key, e.medium_of_performance
+FROM mp_res r
+JOIN mp_expression e ON r.id = e.id
+WHERE r.id = $1
+`
+
+type GetExpressionRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	EntityType          MpEntityType       `json:"entity_type"`
+	Note                []string           `json:"note"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	Category            []string           `json:"category"`
+	Extent              []string           `json:"extent"`
+	IntendedAudience    []string           `json:"intended_audience"`
+	UseRights           []string           `json:"use_rights"`
+	CartographicScale   []string           `json:"cartographic_scale"`
+	Language            []string           `json:"language"`
+	MusicalKey          []string           `json:"musical_key"`
+	MediumOfPerformance []string           `json:"medium_of_performance"`
+}
+
+func (q *Queries) GetExpression(ctx context.Context, id pgtype.UUID) (GetExpressionRow, error) {
+	row := q.db.QueryRow(ctx, getExpression, id)
+	var i GetExpressionRow
+	err := row.Scan(
+		&i.ID,
+		&i.EntityType,
+		&i.Note,
+		&i.CreatedAt,
+		&i.Category,
+		&i.Extent,
+		&i.IntendedAudience,
+		&i.UseRights,
+		&i.CartographicScale,
+		&i.Language,
+		&i.MusicalKey,
+		&i.MediumOfPerformance,
+	)
+	return i, err
+}
+
+const getItem = `-- name: GetItem :one
+SELECT r.id, r.entity_type, r.note, r.created_at, i.location, i.use_rights
+FROM mp_res r
+JOIN mp_item i ON r.id = i.id
+WHERE r.id = $1
+`
+
+type GetItemRow struct {
+	ID         pgtype.UUID        `json:"id"`
+	EntityType MpEntityType       `json:"entity_type"`
+	Note       []string           `json:"note"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	Location   []string           `json:"location"`
+	UseRights  []string           `json:"use_rights"`
+}
+
+func (q *Queries) GetItem(ctx context.Context, id pgtype.UUID) (GetItemRow, error) {
+	row := q.db.QueryRow(ctx, getItem, id)
+	var i GetItemRow
+	err := row.Scan(
+		&i.ID,
+		&i.EntityType,
+		&i.Note,
+		&i.CreatedAt,
+		&i.Location,
+		&i.UseRights,
+	)
+	return i, err
+}
+
+const getManifestation = `-- name: GetManifestation :one
+SELECT r.id, r.entity_type, r.note, r.created_at, m.carrier_category, m.extent, m.intended_audience, m.manifestation_statement, m.access_conditions, m.use_rights
+FROM mp_res r
+JOIN mp_manifestation m ON r.id = m.id
+WHERE r.id = $1
+`
+
+type GetManifestationRow struct {
+	ID                     pgtype.UUID        `json:"id"`
+	EntityType             MpEntityType       `json:"entity_type"`
+	Note                   []string           `json:"note"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	CarrierCategory        []string           `json:"carrier_category"`
+	Extent                 []string           `json:"extent"`
+	IntendedAudience       []string           `json:"intended_audience"`
+	ManifestationStatement []string           `json:"manifestation_statement"`
+	AccessConditions       []string           `json:"access_conditions"`
+	UseRights              []string           `json:"use_rights"`
+}
+
+func (q *Queries) GetManifestation(ctx context.Context, id pgtype.UUID) (GetManifestationRow, error) {
+	row := q.db.QueryRow(ctx, getManifestation, id)
+	var i GetManifestationRow
+	err := row.Scan(
+		&i.ID,
+		&i.EntityType,
+		&i.Note,
+		&i.CreatedAt,
+		&i.CarrierCategory,
+		&i.Extent,
+		&i.IntendedAudience,
+		&i.ManifestationStatement,
+		&i.AccessConditions,
+		&i.UseRights,
+	)
+	return i, err
 }
 
 const getPerson = `-- name: GetPerson :one
@@ -212,6 +398,283 @@ func (q *Queries) GetWorksByCreator(ctx context.Context, targetID pgtype.UUID) (
 	var items []GetWorksByCreatorRow
 	for rows.Next() {
 		var i GetWorksByCreatorRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.Category,
+			&i.RepresentativeAttributes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listExpressions = `-- name: ListExpressions :many
+SELECT r.id, r.entity_type, r.note, r.created_at, e.category, e.extent, e.intended_audience, e.use_rights, e.cartographic_scale, e.language, e.musical_key, e.medium_of_performance
+FROM mp_res r
+JOIN mp_expression e ON r.id = e.id
+ORDER BY r.created_at DESC
+`
+
+type ListExpressionsRow struct {
+	ID                  pgtype.UUID        `json:"id"`
+	EntityType          MpEntityType       `json:"entity_type"`
+	Note                []string           `json:"note"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	Category            []string           `json:"category"`
+	Extent              []string           `json:"extent"`
+	IntendedAudience    []string           `json:"intended_audience"`
+	UseRights           []string           `json:"use_rights"`
+	CartographicScale   []string           `json:"cartographic_scale"`
+	Language            []string           `json:"language"`
+	MusicalKey          []string           `json:"musical_key"`
+	MediumOfPerformance []string           `json:"medium_of_performance"`
+}
+
+func (q *Queries) ListExpressions(ctx context.Context) ([]ListExpressionsRow, error) {
+	rows, err := q.db.Query(ctx, listExpressions)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListExpressionsRow
+	for rows.Next() {
+		var i ListExpressionsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.Category,
+			&i.Extent,
+			&i.IntendedAudience,
+			&i.UseRights,
+			&i.CartographicScale,
+			&i.Language,
+			&i.MusicalKey,
+			&i.MediumOfPerformance,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listItems = `-- name: ListItems :many
+SELECT r.id, r.entity_type, r.note, r.created_at, i.location, i.use_rights
+FROM mp_res r
+JOIN mp_item i ON r.id = i.id
+ORDER BY r.created_at DESC
+`
+
+type ListItemsRow struct {
+	ID         pgtype.UUID        `json:"id"`
+	EntityType MpEntityType       `json:"entity_type"`
+	Note       []string           `json:"note"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	Location   []string           `json:"location"`
+	UseRights  []string           `json:"use_rights"`
+}
+
+func (q *Queries) ListItems(ctx context.Context) ([]ListItemsRow, error) {
+	rows, err := q.db.Query(ctx, listItems)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListItemsRow
+	for rows.Next() {
+		var i ListItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.Location,
+			&i.UseRights,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listManifestations = `-- name: ListManifestations :many
+SELECT r.id, r.entity_type, r.note, r.created_at, m.carrier_category, m.extent, m.intended_audience, m.manifestation_statement, m.access_conditions, m.use_rights
+FROM mp_res r
+JOIN mp_manifestation m ON r.id = m.id
+ORDER BY r.created_at DESC
+`
+
+type ListManifestationsRow struct {
+	ID                     pgtype.UUID        `json:"id"`
+	EntityType             MpEntityType       `json:"entity_type"`
+	Note                   []string           `json:"note"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	CarrierCategory        []string           `json:"carrier_category"`
+	Extent                 []string           `json:"extent"`
+	IntendedAudience       []string           `json:"intended_audience"`
+	ManifestationStatement []string           `json:"manifestation_statement"`
+	AccessConditions       []string           `json:"access_conditions"`
+	UseRights              []string           `json:"use_rights"`
+}
+
+func (q *Queries) ListManifestations(ctx context.Context) ([]ListManifestationsRow, error) {
+	rows, err := q.db.Query(ctx, listManifestations)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListManifestationsRow
+	for rows.Next() {
+		var i ListManifestationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.CarrierCategory,
+			&i.Extent,
+			&i.IntendedAudience,
+			&i.ManifestationStatement,
+			&i.AccessConditions,
+			&i.UseRights,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listPeople = `-- name: ListPeople :many
+SELECT 
+    r.id, r.entity_type, r.note, r.created_at, r.updated_at,
+    a.contact_info, a.field_of_activity, a.language,
+    p.profession
+FROM mp_res r
+JOIN mp_agent a ON r.id = a.id
+JOIN mp_person p ON a.id = p.id
+ORDER BY r.created_at DESC
+`
+
+type ListPeopleRow struct {
+	ID              pgtype.UUID        `json:"id"`
+	EntityType      MpEntityType       `json:"entity_type"`
+	Note            []string           `json:"note"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	ContactInfo     []string           `json:"contact_info"`
+	FieldOfActivity []string           `json:"field_of_activity"`
+	Language        []string           `json:"language"`
+	Profession      []string           `json:"profession"`
+}
+
+func (q *Queries) ListPeople(ctx context.Context) ([]ListPeopleRow, error) {
+	rows, err := q.db.Query(ctx, listPeople)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListPeopleRow
+	for rows.Next() {
+		var i ListPeopleRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.ContactInfo,
+			&i.FieldOfActivity,
+			&i.Language,
+			&i.Profession,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRes = `-- name: ListRes :many
+SELECT id, entity_type, note, created_at, updated_at
+FROM mp_res
+ORDER BY created_at DESC
+`
+
+func (q *Queries) ListRes(ctx context.Context) ([]MpRe, error) {
+	rows, err := q.db.Query(ctx, listRes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []MpRe
+	for rows.Next() {
+		var i MpRe
+		if err := rows.Scan(
+			&i.ID,
+			&i.EntityType,
+			&i.Note,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listWorks = `-- name: ListWorks :many
+SELECT r.id, r.entity_type, r.note, r.created_at, w.category, w.representative_attributes
+FROM mp_res r
+JOIN mp_work w ON r.id = w.id
+ORDER BY r.created_at DESC
+`
+
+type ListWorksRow struct {
+	ID                       pgtype.UUID        `json:"id"`
+	EntityType               MpEntityType       `json:"entity_type"`
+	Note                     []string           `json:"note"`
+	CreatedAt                pgtype.Timestamptz `json:"created_at"`
+	Category                 []string           `json:"category"`
+	RepresentativeAttributes []byte             `json:"representative_attributes"`
+}
+
+func (q *Queries) ListWorks(ctx context.Context) ([]ListWorksRow, error) {
+	rows, err := q.db.Query(ctx, listWorks)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListWorksRow
+	for rows.Next() {
+		var i ListWorksRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.EntityType,

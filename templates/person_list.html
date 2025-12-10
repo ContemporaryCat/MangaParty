@@ -1,0 +1,20 @@
+{{define "content"}}
+<div class="flex-between mb-2">
+    <h1>People</h1>
+    <a href="/people/new" class="btn btn-primary">Create New Person</a>
+</div>
+
+<div class="card-grid">
+    {{range .}}
+    <div class="card">
+        <h3>{{index .Profession 0}}</h3> <!-- Just showing first profession as title for now, or ID if empty -->
+        <p><strong>ID:</strong> {{.ID}}</p>
+        {{if .ContactInfo}}<p><strong>Contact:</strong> {{index .ContactInfo 0}}</p>{{end}}
+        {{if .Language}}<p><strong>Language:</strong> {{index .Language 0}}</p>{{end}}
+        <p class="badge">Person</p>
+    </div>
+    {{else}}
+    <p>No people found. Create one to get started!</p>
+    {{end}}
+</div>
+{{end}}

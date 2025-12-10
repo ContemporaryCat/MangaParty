@@ -1,0 +1,53 @@
+{{define "content"}}
+<div class="mb-2">
+    <h1>Create New Work</h1>
+    <a href="/works" class="btn btn-secondary">&larr; Back to List</a>
+</div>
+
+<div class="card">
+    <form action="/api/work" method="POST">
+        <div class="form-group">
+            <label for="category">Category</label>
+            <input type="text" id="category" name="category" placeholder="e.g. Manga Series, One-shot">
+        </div>
+
+        <div class="form-group">
+            <label for="note">Note</label>
+            <textarea id="note" name="note" rows="3" placeholder="Optional notes..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Work</button>
+    </form>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            category: formData.get('category') ? [formData.get('category')] : [],
+            note: formData.get('note') ? [formData.get('note')] : [],
+            representative_attributes: {} // Optional JSONB
+        };
+
+        try {
+            const response = await fetch('/api/work', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.href = '/works';
+            } else {
+                alert('Failed to create work');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    });
+</script>
+{{end}}

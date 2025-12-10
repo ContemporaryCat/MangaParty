@@ -1,8 +1,31 @@
-# .gitignore
+# --- Binaries & Build Artifacts ---
+bin/
+*.exe
+*.exe~
+*.dll
+# Verify if you want to ignore main.exe if 'go run' generates it temporarily
+main.exe 
 
-release.ps1
+# --- Logs & Databases ---
+logs/
+postgres.log
+postgres_data/
+*.log
 
-mangaparty.exe
-mangaparty
+# --- Local Configuration ---
+.env
+.env.local
 
+# --- Editor/IDE Settings ---
 .vscode/
+.idea/
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
+
+# --- Scripts ---
+scripts/
+db_start.ps1
+db_stop.ps1
+release.ps1

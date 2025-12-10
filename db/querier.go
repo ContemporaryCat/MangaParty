@@ -12,15 +12,27 @@ import (
 
 type Querier interface {
 	CreateAgent(ctx context.Context, arg CreateAgentParams) error
+	CreateExpression(ctx context.Context, arg CreateExpressionParams) error
+	CreateItem(ctx context.Context, arg CreateItemParams) error
+	CreateManifestation(ctx context.Context, arg CreateManifestationParams) error
 	CreatePerson(ctx context.Context, arg CreatePersonParams) error
 	CreateRelationship(ctx context.Context, arg CreateRelationshipParams) (pgtype.UUID, error)
 	CreateRes(ctx context.Context, arg CreateResParams) (CreateResRow, error)
 	CreateWork(ctx context.Context, arg CreateWorkParams) error
+	GetExpression(ctx context.Context, id pgtype.UUID) (GetExpressionRow, error)
+	GetItem(ctx context.Context, id pgtype.UUID) (GetItemRow, error)
+	GetManifestation(ctx context.Context, id pgtype.UUID) (GetManifestationRow, error)
 	// Returns a fully hydrated Person by joining the inheritance tables
 	GetPerson(ctx context.Context, id pgtype.UUID) (GetPersonRow, error)
 	GetWork(ctx context.Context, id pgtype.UUID) (GetWorkRow, error)
 	// Demonstrates graph traversal: Find all works created by a specific person
 	GetWorksByCreator(ctx context.Context, targetID pgtype.UUID) ([]GetWorksByCreatorRow, error)
+	ListExpressions(ctx context.Context) ([]ListExpressionsRow, error)
+	ListItems(ctx context.Context) ([]ListItemsRow, error)
+	ListManifestations(ctx context.Context) ([]ListManifestationsRow, error)
+	ListPeople(ctx context.Context) ([]ListPeopleRow, error)
+	ListRes(ctx context.Context) ([]MpRe, error)
+	ListWorks(ctx context.Context) ([]ListWorksRow, error)
 }
 
 var _ Querier = (*Queries)(nil)

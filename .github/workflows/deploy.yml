@@ -25,10 +25,21 @@ jobs:
           host: ${{ secrets.HOST }}
           username: root
           key: ${{ secrets.SSH_KEY }}
-          # Note: GoReleaser path includes project name and arch
+          # Step 1: Deploy Binary (strip dist path)
           source: "dist/mangaparty_linux_amd64_v1/mangaparty"
           target: "/var/www/mangaparty/"
+          # strips 'dist' and 'mangaparty_linux_amd64_v1'
           strip_components: 2
+
+      - uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          # Step 2: Deploy Assets (preserve structure)
+          source: "templates,static,sql"
+          target: "/var/www/mangaparty/"
+          strip_components: 0
 
       - uses: appleboy/ssh-action@master
         with:

@@ -1,0 +1,19 @@
+{{define "content"}}
+<div class="flex-between mb-2">
+    <h1>Works</h1>
+    <a href="/works/new" class="btn btn-primary">Create New Work</a>
+</div>
+
+<div class="card-grid">
+    {{range .}}
+    <div class="card">
+        <h3>{{if .Category}}{{index .Category 0}}{{else}}Untitled Work{{end}}</h3>
+        <p><strong>ID:</strong> {{.ID}}</p>
+        {{if .Note}}<p><strong>Note:</strong> {{index .Note 0}}</p>{{end}}
+        <p class="badge">Work</p>
+    </div>
+    {{else}}
+    <p>No works found. Create one to get started!</p>
+    {{end}}
+</div>
+{{end}}

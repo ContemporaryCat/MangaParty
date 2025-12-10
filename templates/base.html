@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaParty</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="logo">MangaParty</a>
+            <ul class="nav-links">
+                <li><a href="/people">People</a></li>
+                <li><a href="/works">Works</a></li>
+                <li><a href="/expressions">Expressions</a></li>
+                <li><a href="/manifestations">Manifestations</a></li>
+                <li><a href="/items">Items</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {{template "content" .}}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 MangaParty. Implementing LRM Schema.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{{define "content"}}
+<div class="mb-2">
+    <h1>Create New Person</h1>
+    <a href="/people" class="btn btn-secondary">&larr; Back to List</a>
+</div>
+
+<div class="card">
+    <form action="/api/person" method="POST">
+        <!-- Note: The API currently expects JSON, but for a simple HTML form we might need to adjust the handler 
+             or use JS to submit as JSON. For this demo, I'll update the handler to support form data or 
+             add a simple JS script here to convert form to JSON. Let's use JS for now to keep the Go handler simple. -->
+
+        <div class="form-group">
+            <label for="profession">Profession</label>
+            <input type="text" id="profession" name="profession" placeholder="e.g. Mangaka, Illustrator">
+        </div>
+
+        <div class="form-group">
+            <label for="contact_info">Contact Info</label>
+            <input type="text" id="contact_info" name="contact_info" placeholder="e.g. email@example.com">
+        </div>
+
+        <div class="form-group">
+            <label for="language">Language</label>
+            <input type="text" id="language" name="language" placeholder="e.g. Japanese">
+        </div>
+
+        <div class="form-group">
+            <label for="note">Note</label>
+            <textarea id="note" name="note" rows="3" placeholder="Optional notes..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Person</button>
+    </form>
+</div>
+
+<script>
+    document.querySelector('form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            profession: formData.get('profession') ? [formData.get('profession')] : [],
+            contact_info: formData.get('contact_info') ? [formData.get('contact_info')] : [],
+            language: formData.get('language') ? [formData.get('language')] : [],
+            note: formData.get('note') ? [formData.get('note')] : [],
+            field_of_activity: [] // Optional
+        };
+
+        try {
+            const response = await fetch('/api/person', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.href = '/people';
+            } else {
+                alert('Failed to create person');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred');
+        }
+    });
+</script>
+{{end}}
